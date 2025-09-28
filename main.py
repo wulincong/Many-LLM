@@ -1,7 +1,13 @@
 # llm_framework/main.py
+import os
 import sys
+import json
 from dotenv import load_dotenv
 from llm_orchestrator import LLMOrchestrator
+# 引入策略类
+from selection_strategy import SequentialStrategy, RandomStrategy 
+from tqdm import tqdm
+from manyllm import ChatSession
 
 # --- 定义模型优先级列表 ---
 MODEL_PRIORITY_LIST = [
@@ -56,6 +62,8 @@ user_msg = """
 {"messages": [{"role": "user", "content": "如果我要招聘一个嵌入式开发工程师，要求是本科和不限，职位描述应该怎么写？"}, {"role": "assistant", "content": "为您生成了一份嵌入式开发工程师的招聘详情：\n\n**我们正在寻找一位嵌入式开发工程师！**\n* **我们希望您拥有：** 本科学历以及不限的相关工作经验。\n* **您将负责：**\n工作职责;1.负责车控操作OS 下功能模块设计与软件开发工作；2.负责车控操作OS 下 功能模块的功能定义、规范定义、模块的软件架构设计；任职资格：1.车辆工程、通信、计算机、软件工程、交通等专业，本科及以上学历；2.精通嵌入式Linux软件开发及调试技巧，熟练掌握C、C++编程语言之一及多线程编程或网络编程；3.熟悉无人驾驶或机器人系统功能协议栈，有项目开发经验优先；4.具备良好的分析解决问题能力，能独立承担开发任务和有系统进度把控能力；5.责任心强，良好的对外沟通和团队协作能力，主动，好学；背景介绍：国汽智控在去年7月31日正式挂牌成立，秉承着顶层设计和行业共识，是由国汽智联孵化的面向市场的公司，近期天使轮融资近一个亿；安全部门由ICT行业和车圈资深研发人员组成，部门研发氛围浓厚，同事关系简单融洽，彼此相互沟通，相互学习；部门leader是清华自动化系的本科硕士，博士毕业于伊利诺伊大学香槟分校电子与计算机工程系，具备20多年的信息安全和云计算经验；公司创始人尚进是清华汽车系的本科、硕士、博士，并获计算机本科双学位，博士论文获评“全国百篇优秀博士论文”。2001年获美国南加州大学计算机硕士学位，在ICT和汽车行业均有很资深的从业背景；"}]}
 """
 
+
+
 # 原有的 run_chat_session 函数可以保留，用于测试非流式
 
 def run_streaming_chat_session():
@@ -84,35 +92,6 @@ def run_streaming_chat_session():
     print("\n\n--- 流式传输结束 ---")
     # print(f"完整回复: \n{full_response}")
 
-def run_chat_session():
-    load_dotenv()
-
-    # --- 初始化编排器 ---
-    orchestrator = LLMOrchestrator(model_priority=MODEL_PRIORITY_LIST)
-
-    messages = [
-        {"role": "user", "content": user_msg}
-    ]
-    print(f"用户: {messages[-1]['content']}\n")
-
-    # --- 使用编排器进行调用 ---
-    result = orchestrator.chat(
-        messages,
-        temperature=0.7,
-        max_tokens=1000,
-        thinking=0,
-        system_prompt = system_prompt
-        
-    )
-
-    # --- 处理返回结果 ---
-    if result["status"] == "success":
-        print(f"\n✅ 最终成功模型: {result['model']}")
-        print(f"🤖 回复:\n{result['content']}")
-    else:
-        print(f"\n❌ 请求失败:")
-        print(result["message"])
-
 
 if __name__ == "__main__":
     # print("--- 运行流式聊天会话 ---")
@@ -121,4 +100,6 @@ if __name__ == "__main__":
     # 你也可以保留非流式测试
     print("\n\n--- 运行非流式聊天会话 ---")
     # from main import run_chat_session # 假设你把原来的代码放到了同名函数
-    run_chat_session()
+    chat = ChatSession()
+
+    chat.run_chat(user_msg, system_prompt=system_prompt)

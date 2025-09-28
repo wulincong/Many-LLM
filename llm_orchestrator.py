@@ -1,21 +1,19 @@
 # llm_framework/llm_orchestrator.py
 # ... __init__ 和 chat 方法不变 ...
 # llm_framework/llm_orchestrator.py
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Generator
 from llm_factory import LLMFactory
+from selection_strategy import SelectionStrategy, PoolItem, ItemIdentifier
 
 class LLMOrchestrator:
     """
     模型编排器，负责根据优先级列表调用模型，并处理故障切换。
     """
-    def __init__(self, model_priority: List[str]):
-        """
-        初始化编排器。
-        :param model_priority: 一个包含模型名称的列表，按从高到低的优先级排列。
-        """
-        if not model_priority:
-            raise ValueError("模型优先级列表不能为空")
-        self.model_priority = model_priority
+    def __init__(self, pool: List[PoolItem], strategy: SelectionStrategy):
+        if not pool:
+            raise ValueError("模型密钥池不能为空")
+        self.pool = pool
+        self.strategy = strategy
         self.factory = LLMFactory()
 
     def chat(self, messages: List[Dict[str, str]], **kwargs) -> Dict[str, Any]:
@@ -25,53 +23,67 @@ class LLMOrchestrator:
         :param kwargs: 其他生成参数。
         :return: 一个包含成功模型和其回复的字典，或者一个错误信息。
         """
+        failed_items: set[ItemIdentifier] = set()
         last_exception = None
-        for model_name in self.model_priority:
+
+        while True:
+            # 向策略请求下一个要尝试的项
+            selected_item = self.strategy.select(self.pool, failed_items)
+
+            # 如果策略返回None，说明所有选项都已尝试失败
+            if selected_item is None:
+                break
+            
+            model_name, api_key, metadata = selected_item
+            
             try:
-                print(f"--- 尝试使用模型: {model_name} ---")
-                provider = self.factory.get_provider(model_name, **kwargs)
+                print(f"--- 策略选择: 模型={model_name}, 元数据={metadata}, Key=...{api_key[-4:]} ---")
+                provider = self.factory.get_provider(model_name, api_key)
                 response_text = provider.chat(messages, **kwargs)
-                print(f"--- 模型 {model_name} 调用成功！ ---")
-                # 返回一个结构化的结果，告知哪个模型成功了
+                
+                print(f"--- 调用成功! ---")
                 return {
                     "status": "success",
                     "model": model_name,
+                    "key_used": f"...{api_key[-4:]}",
+                    "metadata": metadata,
                     "content": response_text
                 }
             except Exception as e:
-                print(f"模型 {model_name} 调用失败。错误: {e}")
+                print(f"--- 调用失败。错误: {e} ---")
                 last_exception = e
-                # 继续尝试下一个模型
-                continue
+                # 将失败的项加入集合，以便策略下次选择时跳过
+                failed_items.add((model_name, api_key))
         
-        # 如果所有模型都失败了
-        print("--- 所有模型均调用失败 ---")
+        print("--- 所有可用 (模型,密钥) 对均调用失败 ---")
         return {
             "status": "error",
-            "message": f"所有模型都无法处理请求。最后一个错误: {last_exception}"
+            "message": f"所有可用选项都无法处理请求。最后一个错误: {last_exception}"
         }
-    
-    def chat_stream(self, messages: List[Dict[str, str]], **kwargs):
-        """
-        尝试按顺序调用模型列表进行流式对话。
-        """
+
+    # chat_stream 方法也需要进行同样的修改
+    def chat_stream(self, messages: List[Dict[str, str]], **kwargs) -> Generator[str, None, None]:
+        failed_items: set[ItemIdentifier] = set()
         last_exception = None
-        for model_name in self.model_priority:
+
+        while True:
+            selected_item = self.strategy.select(self.pool, failed_items)
+            if selected_item is None:
+                break
+
+            model_name, api_key, metadata = selected_item
             try:
-                print(f"--- 尝试使用模型 (流式): {model_name} ---")
-                provider = self.factory.get_provider(model_name)
-                # yield from 会将子生成器的产出直接传递给调用者
+                print(f"--- 策略选择 (流式): 模型={model_name}, 元数据={metadata}, Key=...{api_key[-4:]} ---")
+                provider = self.factory.get_provider(model_name, api_key)
                 yield from provider.chat_stream(messages, **kwargs)
-                
                 print(f"\n--- 模型 {model_name} 流式传输成功！ ---")
-                # 如果成功启动流，就此结束
                 return
             except Exception as e:
-                print(f"模型 {model_name} (流式) 调用失败。错误: {e}")
+                print(f"--- 调用失败 (流式)。错误: {e} ---")
                 last_exception = e
-                continue
-        
-        # 如果所有模型都失败了
-        print("--- 所有模型均调用失败 (流式) ---")
-        # 我们可以 yield 一个错误信息，或者直接抛出异常
-        yield f"所有模型都无法处理请求。最后一个错误: {last_exception}"
+                # --- 核心修改 ---
+                failed_items.add((model_name, api_key))
+
+        print("--- 所有可用 (模型,密钥) 对均调用失败 (流式) ---")
+        yield f"ERROR: 所有可用选项都无法处理请求。最后一个错误: {last_exception}"
+
