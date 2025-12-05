@@ -56,7 +56,7 @@ class ChatSession:
             {"role": "user", "content": user_msg}
         ]
 
-        print(f"用户: {messages[-1]['content']}\n")
+        # print(f"用户: {messages[-1]['content']}\n")
 
         # --- 使用编排器进行调用 ---
         result = orchestrator.chat(
@@ -69,11 +69,12 @@ class ChatSession:
 
         # --- 处理返回结果 ---
         if result["status"] == "success":
-            print(f"\n✅ 最终成功模型: {result['model']}")
-            print(f"🤖 回复:\n{result['content']}")
+            # print(f"\n✅ 最终成功模型: {result['model']}")
+            return result['content']
         else:
-            print(f"\n❌ 请求失败:")
-            print(result["message"])
+            # print(f"\n❌ 请求失败:")
+            # print(result["message"])
+            return result["message"]
 
 if __name__ == "__main__":
     chat = ChatSession()
