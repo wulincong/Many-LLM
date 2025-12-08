@@ -33,6 +33,13 @@ class ChatSession:
             if key:
                 self.pool.append(("gpt-4o", key, {"priority": 3, "provider": "openai"}))
 
+        # 加载 ZhipuAI 密钥
+        for i in range(1, 10):
+            key = os.getenv(f"ZHIPUAI_API_KEY_{i}")
+            if key:
+                self.pool.append(("glm-4.5-flash", key, {"priority": 4, "provider": "zhipuai"}))
+                self.pool.append(("glm-4.5", key, {"priority": 5, "provider": "zhipuai"}))
+
         if not self.pool:
             raise ValueError("未能从环境变量加载任何 (模型,密钥) 对，请检查 .env 文件。")
             
@@ -45,7 +52,7 @@ class ChatSession:
         print("--------------------------")
 
 
-    def run_chat(self, user_msg, system_prompt="", temperature=0.7, max_tokens=1000):
+    def run_chat(self, user_msg, system_prompt="", temperature=0.7, max_tokens=1000, model_name=None):
         
         print(f"当前使用的选择策略: {self.strategy.__class__.__name__}")
 
@@ -64,7 +71,8 @@ class ChatSession:
             temperature=temperature,
             max_tokens=max_tokens,
             thinking=0,
-            system_prompt = system_prompt
+            system_prompt = system_prompt,
+            model_name=model_name
         )
 
         # --- 处理返回结果 ---
@@ -78,4 +86,7 @@ class ChatSession:
 
 if __name__ == "__main__":
     chat = ChatSession()
-    chat.run_chat("什么是量子力学")
+    print("--- 测试 Gemini 模型 ---")
+    print(chat.run_chat("什么是量子力学"))
+    print("\n--- 测试 ZhipuAI GLM 模型 ---")
+    print(chat.run_chat("作为一名营销专家，请为我的产品创作一个吸引人的口号", system_prompt="智谱AI开放平台", model_name="glm-4.5"))

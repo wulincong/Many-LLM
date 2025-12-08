@@ -2,6 +2,7 @@
 from typing import Optional
 from providers.base_provider import LLMProvider
 from providers.gemini_provider import GeminiProvider
+from providers.zhipuai_provider import ZhipuAIProvider
 # from providers.openai_provider import OpenAIProvider
 
 class LLMFactory:
@@ -15,7 +16,8 @@ class LLMFactory:
 
         if "gemini" in model_name.lower() or "gemma" in model_name.lower():
             return GeminiProvider(model_name=model_name, api_key=api_key)
-        
+        elif "glm" in model_name.lower():
+            return ZhipuAIProvider(model_name=model_name, api_key=api_key)
         # elif "gpt" in model_name.lower():
         #     return OpenAIProvider(model_name=model_name, api_key=api_key)
         
