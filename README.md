@@ -6,7 +6,7 @@
 
 ### 1. 配置环境变量 (.env)
 
-在项目根目录下创建一个名为 `.env` 的文件，并按照以下格式配置您的大模型 API 密钥。本项目支持 Google Gemini 和 OpenAI 模型。
+在项目根目录下创建一个名为 `.env` 的文件，并按照以下格式配置您的大模型 API 密钥。本项目支持 Google Gemini 和 Zhipu 模型。
 
 **Google Gemini API 密钥配置示例：**
 
