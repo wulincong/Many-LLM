@@ -1,6 +1,13 @@
 # Many-LLM
 
-本项目旨在尝试使用多种（免费）大模型回答问题，并通过策略进行负载均衡和故障切换。
+## 使用场景
+
+* 想 **大批量“白嫖”LLM** —— 想让LLM 7×24 小时给你打工，又不愿意支付长长的账单。
+* 需要跑一大堆**数据清洗、文本处理、文献翻译**，但你本人拒绝加班，希望 AI 帮你 996。
+* 想把 **LLM 接入自己的程序（LLM-in-the-loop）**，结果发现大模型们不是在限流，就是在罢工，调用成功率堪比摇号。
+
+本项目的目标，是整合多个免费可用的大语言模型源，通过智能调度、负载均衡与自动故障切换机制，让你的任务在模型波动频繁的情况下依旧稳定运行，实现“有模型可用就用、没模型就自动切换”的弹性策略。
+
 
 ## 快速开始
 
@@ -21,6 +28,15 @@ GEMINI_API_KEY_2=YOUR_GEMINI_API_KEY_2
 ```dotenv
 OPENAI_API_KEY_1=YOUR_OPENAI_API_KEY_1
 # 您可以根据需要添加更多 OpenAI API 密钥
+```
+
+**Cloudflare AI Gateway API 密钥配置示例：**
+
+```dotenv
+CLOUDFLARE_API_BASE_URL=https://api.cloudflare.com/client/v4/accounts/YOUR_ACCOUNT_ID/ai/run/
+CLOUDFLARE_API_TOKEN=YOUR_CLOUDFLARE_API_TOKEN
+# 请将 YOUR_ACCOUNT_ID 替换为您的 Cloudflare 账户 ID
+# 请将 YOUR_CLOUDFLARE_API_TOKEN 替换为您的 Cloudflare API Token
 ```
 
 **重要提示：**
@@ -75,3 +91,10 @@ class ChatSession:
 *   `providers/`: 包含不同大模型提供者的实现 (例如 `gemini_provider.py`, `openai_provider.py`)。
 *   `dataset/`: 存放数据集文件。
 *   `utils/`: 存放工具函数和 Jupyter Notebook。
+
+## TODO:
+
+- 以API模式启动
+- 并行批处理任务支持
+- 以指定编程语言的格式返回，而不是仅返回字符串
+
