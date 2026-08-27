@@ -1,0 +1,22 @@
+{
+  "input_csv": "dataset\\分类模型无法判断是否拒答列表.csv",
+  "output_csv": "dataset\\refusal_answer_model_review.csv",
+  "processed_rows": 2155,
+  "total_rows": 2155,
+  "source_columns": [
+    "序号",
+    "idx",
+    "id",
+    "domain",
+    "case_type",
+    "expected",
+    "refusal_type",
+    "pred_refuse",
+    "correct",
+    "input_risk",
+    "output_risk",
+    "question",
+    "answer"
+  ],
+  "source_encoding": "gb18030"
+}

@@ -1,0 +1,22 @@
+{
+  "input_csv": "dataset\\非据答题被拒答情况分析.csv",
+  "output_csv": "dataset\\non_refusal_topic_category_model_review.csv",
+  "processed_rows": 523,
+  "total_rows": 523,
+  "source_columns": [
+    "idx",
+    "id",
+    "domain",
+    "case_type",
+    "expected",
+    "refusal_type",
+    "pred_refuse",
+    "correct",
+    "input_risk",
+    "output_risk",
+    "question",
+    "answer",
+    "rejudge_status"
+  ],
+  "source_encoding": "gb18030"
+}

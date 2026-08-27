@@ -1,8 +1,8 @@
 import requests
 import os
-from providers.base_provider import BaseProvider
+from providers.base_provider import LLMProvider
 
-class CloudflareProvider(BaseProvider):
+class CloudflareProvider(LLMProvider):
     def __init__(self):
         self.api_base_url = os.getenv("CLOUDFLARE_API_BASE_URL", "https://api.cloudflare.com/client/v4/accounts/03157a3894e23338c180e62608b43b2d/ai/run/")
         self.api_token = os.getenv("CLOUDFLARE_API_TOKEN")

@@ -1,0 +1,7 @@
+{
+  "input_csv": "dataset\\附件4-拦截关键词0727.csv",
+  "output_csv": "dataset\\sensitive_keyword_model_review.csv",
+  "processed_rows": 22946,
+  "total_rows": 22946,
+  "keyword_column_index": 3
+}

@@ -23,10 +23,14 @@ class ChatSession:
             key = os.getenv(f"GEMINI_API_KEY_{i}")
             if key:
                 # 为池中的每个项添加元数据，例如优先级
-                self.pool.append(("gemma-3-27b-it", key, {"priority": 1, "provider": "google"}))
-                self.pool.append(("gemini-2.0-flash-lite", key, {"priority": 2, "provider": "google"}))
-                self.pool.append(("gemini-2.0-flash", key, {"priority": 3, "provider": "google"}))
-        
+                self.pool.append(("gemini-3.5-flash", key, {"priority": 1, "provider": "google"}))
+                self.pool.append(("gemini-3.1-flash-lite", key, {"priority": 2, "provider": "google"}))
+                self.pool.append(("gemini-3.0-flash", key, {"priority": 3, "provider": "google"}))
+                self.pool.append(("gemini-3-flash-preview", key, {"priority": 4, "provider": "google"}))
+                self.pool.append(("gemini-2.5-pro", key, {"priority": 5, "provider": "google"}))
+                self.pool.append(("gemini-2.5-flash-lite", key, {"priority": 6, "provider": "google"}))
+                self.pool.append(("gemini-2.5-flash", key, {"priority": 7, "provider": "google"}))
+
         # 加载 OpenAI 密钥
         for i in range(1, 10):
             key = os.getenv(f"OPENAI_API_KEY_{i}")
@@ -37,8 +41,9 @@ class ChatSession:
         for i in range(1, 10):
             key = os.getenv(f"ZHIPUAI_API_KEY_{i}")
             if key:
-                self.pool.append(("glm-4.5-flash", key, {"priority": 4, "provider": "zhipuai"}))
-                self.pool.append(("glm-4.5", key, {"priority": 5, "provider": "zhipuai"}))
+                self.pool.append(("glm-4.7-flash", key, {"priority": 1, "provider": "zhipuai"}))
+                self.pool.append(("glm-4.5-flash", key, {"priority": 19, "provider": "zhipuai"}))
+                self.pool.append(("glm-4.5", key, {"priority": 20, "provider": "zhipuai"}))
 
         if not self.pool:
             raise ValueError("未能从环境变量加载任何 (模型,密钥) 对，请检查 .env 文件。")
